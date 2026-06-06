@@ -7,8 +7,8 @@ dataset:
 preprocessing:
   top_mad_features:
     rna: 5000
-    proteomics: 3000
-    phospho: 5000
+    proteomics: 5000
+    phospho: 6000
   scale: true  # z-score per feature across all 204 samples (tumour + normal together)
 
 mofa:
@@ -17,6 +17,7 @@ mofa:
   random_seeds: [42, 1, 2, 3, 4]
   max_iter: 1000
   convergence_mode: fast  # options: fast, medium, slow
+  ard_r2_threshold: 0.01      # drop factors whose total R² across all views is below this  
   likelihoods:
     rna: gaussian
     proteomics: gaussian
