@@ -1,28 +1,61 @@
-#
-#  Global parameters
-#
+# config/config.yml
+# MOSAIC v2 — Latent Trajectory Analysis
+
+dataset:
+  ingestion_dir: results/ingestion
+
+preprocessing:
+  top_mad_features:
+    rna: 5000
+    proteomics: 3000
+    phospho: 5000
+  scale: true  # z-score per feature across all 204 samples (tumour + normal together)
+
+mofa:
+  n_factors: 20
+  n_seeds: 5
+  random_seeds: [42, 1, 2, 3, 4]
+  max_iter: 1000
+  convergence_mode: fast  # options: fast, medium, slow
+  likelihoods:
+    rna: gaussian
+    proteomics: gaussian
+    phospho: gaussian
+
+clustering:
+  k_range: [2, 3, 4, 5, 6]
+  k_final: null           # null = auto-select by silhouette; set an integer to override
+  n_init: 100
+  random_state: 42
+  normalize_delta: true   # L2-normalize ΔZ rows before clustering
+
+interpretation:
+  top_n_weights: 25
+  gsea_gene_sets:
+    - MSigDB_Hallmark_2020
+    - KEGG_2021_Human
+  gsea_min_size: 15
+  gsea_max_size: 500
+  gsea_permutations: 1000
+  gsea_fdr_threshold: 0.25
+
+clinical:
+  survival_time_col: overall_survival_days
+  survival_event_col: overall_survival_event
+  mutation_cols:
+    - KRAS_mutation
+    - EGFR_mutation
+    - TP53_mutation
+    - ALK_fusion
+
+figures:
+  dpi: 300
+  format: pdf
+  cluster_palette: tab10
 
 paths:
-  projectpath: /home/olek/docs/przedmioty/mcbs/MOSAIC
-  datadir: data
-  genomedatadir: data/genome
-  resultsdir: results
-  configdir: config
-  envdir: env
-  tmpdir: tmp
-  srcdir: src
-  shellsrcdir: src/sh
-  pysrcdir: src/python
-  Rsrcdir: src/R
-  snakemakesrcdir: src/snakemake
-
-genome: # if the project uses a single genome assembly
-  symbol: "dm6"
-  chromosomes: "chr2L chr2R chr3L chr3R chr4 chrX chrY"
-  fasta: "data/genome/D.melanogaster/dm6/ucsc/fasta/dm6.fa"
-  chrom_sizes: "data/genome/D.melanogaster/dm6/ucsc/fasta/dm6.chrom.sizes"
-
-#
-#  More parameters here
-#
-
+  results: results
+  figures: figures
+  data: data
+  report: report
+  presentation: presentation

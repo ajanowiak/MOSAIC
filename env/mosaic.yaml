@@ -1,0 +1,31 @@
+name: mosaic
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - snakemake
+  - pyyaml
+  # Core Data Science
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - statsmodels
+  - matplotlib
+  - seaborn
+  - h5py
+  # Multi-omics & Bioinformatics
+  - mofapy2
+  - mofax
+  - muon
+  - scanpy
+  # Analysis & Validation
+  - lifelines
+  - shap
+  - tqdm
+  # Pypi specific packages
+  - pip:
+    - cptac
