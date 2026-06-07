@@ -49,6 +49,14 @@ clinical:
     - TP53_mutation
     - ALK_fusion
 
+dimensionality_reduction:
+  umap:
+    n_neighbors: 15
+    min_dist: 0.1
+    random_state: 42
+  pca:
+    random_state: 42
+
 figures:
   dpi: 300
   format: pdf
