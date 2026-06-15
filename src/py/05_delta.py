@@ -2,14 +2,15 @@
 """
 ΔZ representation analysis for the MOSAIC pipeline.
 
-Pipeline stage 5. Reads per-patient ΔZ from Stage 04 and systematically compares
-eight embedding variants (raw vs L2-normalised × all factors vs Factor1 excluded ×
-PCA vs UMAP). Computes silhouette sweeps over four input matrix combinations and
-produces diagnostic figures for representation selection before Stage 06 clustering.
+Pipeline stage 5. Reads per-patient ΔZ from Stage 04, constructs alternative
+matrix representations (raw vs L2-normalised × all factors vs Factor1 excluded),
+computes fixed PCA and UMAP embeddings, and produces visual comparison figures.
+Embedding CSVs are canonical coordinate systems reused by downstream stages.
 
 Inputs: results/delta/delta_z.csv, results/ingestion/metadata.csv, config/config.yml
-Outputs: normalised ΔZ matrices, embeddings, silhouette tables, and comparison figures
-under results/delta/ and figures/delta/.
+Outputs: normalised ΔZ matrices, embedding coordinates, magnitude summaries,
+Kruskal-Wallis stage comparison, and comparison figures under results/delta/
+and figures/delta/.
 """
 
 from __future__ import annotations
@@ -27,9 +28,7 @@ import pandas as pd
 import seaborn as sns
 import umap
 from scipy.stats import kruskal, skew
-from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -155,14 +154,14 @@ def compute_summary_stats(raw_all: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(records).set_index("factor")
 
 
-def run_kruskal_magnitude_stage(
+def test_magnitude_vs_stage(
     delta_magnitude: pd.DataFrame,
     patient_meta: pd.DataFrame,
     stage_col: str,
     output_path: Path,
     logger: logging.Logger,
 ) -> tuple[float, float]:
-    """Test whether ΔZ magnitude differs across tumour stages."""
+    """Test whether ΔZ magnitude differs across tumour stages and save per-stage summary."""
     merged = delta_magnitude.join(patient_meta[[stage_col]], how="left")
     merged = merged.dropna(subset=[stage_col, "magnitude"])
     stages = sort_stages(merged[stage_col].unique())
@@ -226,33 +225,6 @@ def fit_umap(
     coords = reducer.fit_transform(valid.values)
     df = pd.DataFrame(coords, index=valid.index, columns=["umap1", "umap2"])
     return df.reindex(matrix_df.index)
-
-
-def run_silhouette_sweep(
-    matrix_df: pd.DataFrame,
-    k_range: list,
-    random_state: int,
-    variant_name: str,
-    logger: logging.Logger,
-) -> pd.DataFrame:
-    """Sweep k and compute silhouette scores in the full-dimensional space."""
-    valid_matrix = matrix_df.dropna().values
-    records = []
-    for k in k_range:
-        km = KMeans(n_clusters=k, n_init=50, random_state=random_state)
-        labels = km.fit_predict(valid_matrix)
-        score = silhouette_score(valid_matrix, labels)
-        records.append({"k": k, "silhouette": score})
-
-    result = pd.DataFrame(records)
-    best = result.loc[result["silhouette"].idxmax()]
-    logger.info(
-        "%s: best k=%s, silhouette=%.4f",
-        variant_name,
-        int(best["k"]),
-        best["silhouette"],
-    )
-    return result
 
 
 def pca_labels(evr: np.ndarray) -> tuple[str, str]:
@@ -481,52 +453,6 @@ def plot_delta_distributions(raw_all: pd.DataFrame, output_path: Path, dpi: int)
     savefig(fig, str(output_path), dpi=dpi)
 
 
-def plot_silhouette_comparison(
-    silhouette_dfs: dict[str, pd.DataFrame],
-    output_path: Path,
-    dpi: int,
-) -> None:
-    """Overlay silhouette curves for all four representation variants."""
-    styles = {
-        "raw_all": {"color": "blue", "linestyle": "-", "label": "Raw ΔZ | all factors"},
-        "raw_nof1": {
-            "color": "blue",
-            "linestyle": "--",
-            "label": "Raw ΔZ | no Factor1",
-        },
-        "norm_all": {
-            "color": "orange",
-            "linestyle": "-",
-            "label": "Normalised ΔZ | all factors",
-        },
-        "norm_nof1": {
-            "color": "orange",
-            "linestyle": "--",
-            "label": "Normalised ΔZ | no Factor1",
-        },
-    }
-
-    fig, ax = plt.subplots(figsize=(7, 4))
-    for name, df in silhouette_dfs.items():
-        style = styles[name]
-        ax.plot(df["k"], df["silhouette"], color=style["color"], linestyle=style["linestyle"])
-        best = df.loc[df["silhouette"].idxmax()]
-        ax.scatter(
-            best["k"],
-            best["silhouette"],
-            color=style["color"],
-            s=40,
-            zorder=5,
-        )
-        ax.plot([], [], color=style["color"], linestyle=style["linestyle"], label=style["label"])
-
-    ax.set_xlabel("k")
-    ax.set_ylabel("Silhouette score")
-    ax.set_title("Silhouette score vs k — all representation variants")
-    ax.legend(loc="best", fontsize=7)
-    savefig(fig, str(output_path), dpi=dpi)
-
-
 def _scatter_panel(
     ax,
     coords: pd.DataFrame,
@@ -649,7 +575,6 @@ def main():
     results_dir = Path(config["paths"]["results"]) / "delta"
     figures_dir = Path(config["paths"]["figures"]) / "delta"
     emb_dir = results_dir / "repr_comparison" / "embeddings"
-    sil_dir = results_dir / "repr_comparison" / "silhouette"
     repr_fig_dir = figures_dir / "repr_comparison"
     dpi = config["figures"]["dpi"]
     palette_name = config["figures"]["cluster_palette"]
@@ -695,16 +620,16 @@ def main():
     save_csv(delta_magnitude, str(results_dir / "delta_magnitude.csv"))
     save_csv(delta_summary_stats, str(results_dir / "delta_summary_stats.csv"))
 
-    # Step C — Kruskal-Wallis magnitude vs stage
-    h_stat, p_val = run_kruskal_magnitude_stage(
+    # Step C — Kruskal-Wallis: magnitude vs tumour stage
+    h_stat, p_val = test_magnitude_vs_stage(
         delta_magnitude,
         patient_meta,
         stage_col,
-        sil_dir / "kruskal_magnitude_stage.csv",
+        results_dir / "kruskal_magnitude_stage.csv",
         logger,
     )
 
-    # Step D — compute all 8 embeddings
+    # Step D — compute all 8 embeddings (canonical coordinate systems)
     dr_cfg = config["dimensionality_reduction"]
     umap_neighbors = dr_cfg["umap"]["n_neighbors"]
     umap_min_dist = dr_cfg["umap"]["min_dist"]
@@ -736,24 +661,7 @@ def main():
     for name, df in embeddings.items():
         save_csv(df, str(emb_dir / f"{name}.csv"))
 
-    # Step E — silhouette sweeps
-    k_range = config["clustering"]["k_range"]
-    cluster_seed = config["clustering"]["random_state"]
-    matrices = {
-        "raw_all": raw_all,
-        "raw_nof1": raw_nof1,
-        "norm_all": norm_all,
-        "norm_nof1": norm_nof1,
-    }
-    silhouette_dfs = {}
-    sil_dir.mkdir(parents=True, exist_ok=True)
-    for name, matrix in matrices.items():
-        silhouette_dfs[name] = run_silhouette_sweep(
-            matrix, k_range, cluster_seed, name, logger
-        )
-        save_csv(silhouette_dfs[name], str(sil_dir / f"silhouette_{name}.csv"), index=False)
-
-    # Step F — figures
+    # Step E — figures
     repr_fig_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
 
@@ -891,12 +799,6 @@ def main():
             dpi=dpi,
         )
 
-    plot_silhouette_comparison(
-        silhouette_dfs,
-        repr_fig_dir / "silhouette_comparison.pdf",
-        dpi,
-    )
-
     all_factor_panels = [
         {
             "coords": raw_all_pca,
@@ -945,7 +847,7 @@ def main():
     ]
     plot_summary_panel(
         all_factor_panels,
-        "ΔZ Representation Comparison — All Factors | Review before Stage 06",
+        "ΔZ Representation Comparison — All Factors",
         stage_palette,
         repr_fig_dir / "summary_panel_all_factors.pdf",
         dpi,
@@ -999,7 +901,7 @@ def main():
     ]
     plot_summary_panel(
         no_f1_panels,
-        "ΔZ Representation Comparison — Factor1 Excluded | Review before Stage 06",
+        "ΔZ Representation Comparison — Factor1 Excluded",
         stage_palette,
         repr_fig_dir / "summary_panel_no_factor1.pdf",
         dpi,
