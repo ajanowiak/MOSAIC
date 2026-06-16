@@ -50,13 +50,18 @@ clustering:
 
 interpretation:
   top_n_weights: 25
+  gsea_libraries:
+    - MSigDB_Hallmark_2020
+    - KEGG_2021_Human
   gsea_gene_sets:
     - MSigDB_Hallmark_2020
     - KEGG_2021_Human
   gsea_min_size: 15
   gsea_max_size: 500
   gsea_permutations: 1000
-  gsea_fdr_threshold: 0.25
+  gsea_fdr_threshold: 0.1
+  de_fdr_threshold: 0.05
+  gene_set_cache_dir: data/gmt
 
 clinical:
   survival_time_col: overall_survival_days
