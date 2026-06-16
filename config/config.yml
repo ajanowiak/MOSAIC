@@ -25,10 +25,28 @@ mofa:
 
 clustering:
   k_range: [2, 3, 4, 5, 6]
-  k_final: null           # null = auto-select by silhouette; set an integer to override
   n_init: 100
   random_state: 42
-  normalize_delta: true   # L2-normalize ΔZ rows before clustering
+
+  # Controls how clustering parameters are chosen.
+  # "manual"    — use the parameters specified under clustering.manual below.
+  #               This is the default for reproducibility. Running snakemake
+  #               with this setting reproduces the exact results in the report.
+  # "automatic" — select k by the strategy specified under clustering.automatic.
+  #               Use this when exploring a new feature set.
+  clustering_parameter_selection: manual
+
+  manual:
+    k: 3                      # analyst-chosen number of clusters
+    method: kmeans            # "kmeans" or "gmm"
+    representation: norm_all  # which delta_z variant to cluster on
+
+  automatic:
+    strategy: silhouette      # only "silhouette" is currently supported
+    method: kmeans            # "kmeans" or "gmm"
+    representation: norm_all  # which delta_z variant to cluster on: "raw_all", "raw_nof1", "norm_all", "norm_nof1"
+
+  visualization_representation: norm_all  # "raw_all", "raw_nof1", "norm_all", or "norm_nof1"
 
 interpretation:
   top_n_weights: 25
