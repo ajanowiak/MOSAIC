@@ -8,7 +8,7 @@ preprocessing:
   top_mad_features:
     rna: 5000
     proteomics: 5000
-    phospho: 6000
+    phospho: 5000
   scale: true  # z-score per feature across all 204 samples (tumour + normal together)
 
 mofa:
