@@ -1,0 +1,129 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Dataset and preprocessing}
+
+We used the CPTAC-LUAD cohort described by Gillette et al.\ \cite{gillette2020proteogenomic},
+accessed via the \texttt{cptac} Python package.
+Of the 111 patients in the dataset, nine were excluded because they lacked a complete
+matched tumour-normal pair in at least one of the three omics modalities, leaving 102 patients
+(204 samples) for analysis.
+The three modalities were RNA-seq (BCM pipeline, reported as TPM and converted to
+$\log_2(\text{TPM}+1)$), proteomics (Michigan CPTAC pipeline, log-ratio), and
+phosphoproteomics (Michigan, log-ratio).
+Missing values were handled as follows: features absent in more than 20\% of samples were
+removed; the remainder were median-imputed column-wise.
+
+Feature selection was applied independently per modality using the median absolute
+deviation (MAD) of each feature across all 204 samples.
+The RNA-seq data contained 59,286 features, reflecting the comprehensive GENCODE annotation
+used by the BCM pipeline and including protein-coding genes, long non-coding RNAs,
+and pseudogenes.
+We retained the top 5,000 transcripts, 5,000 proteins, and 6,000 phosphosites by MAD.
+The retained features were then z-scored per feature using a single scaler fit jointly on
+all 204 samples; tumour and normal samples were not z-scored separately.
+This joint scaling is required for the $\Delta Z$ framework: both tissue states must share
+a common reference frame for their difference to be interpretable as a biological
+transformation.
+
+\subsection{Latent factor modelling with MOFA+}
+
+We applied Multi-Omics Factor Analysis (MOFA+, \cite{argelaguet2020mofa2}) to all 204
+samples treated as a single group with three views.
+MOFA+ decomposes the observed data matrix as a product of per-sample latent factor scores
+and per-feature loading weights, assuming that each observed value arises from a
+Gaussian distribution centred on the linear combination of factor contributions.
+
+We initialised 20 factors and fit five models from different random seeds
+(convergence mode: fast, maximum 1,000 iterations); the model with the highest
+final evidence lower bound (ELBO) was selected for downstream analysis.
+
+Inactive factors were removed post-hoc: a factor was retained only if the fraction of
+variance it explained in at least one view exceeded a threshold of $R^2_{\max} \geq 0.01$.
+This retained 13 of the initial 20 factors.
+
+\subsection{Transformation vectors and clustering}
+
+For each of the 102 patients we computed a latent transformation vector as defined
+in equation~(\ref{eq:deltaz}), using the 13-dimensional factor score vector of each sample.
+This produces a $102 \times 13$ matrix whose rows encode the direction and magnitude
+of each patient's tumourigenesis in the shared MOFA latent space.
+
+In matched tumour-normal data, the first MOFA factor typically captures the dominant
+axis of variation, which is the tissue-type contrast itself.
+Variation along this axis reflects the overall extent of transcriptional reprogramming
+and is shared across patients; it therefore carries less information about
+patient-specific transformation patterns than the remaining factors.
+We constructed four representations of the $\Delta Z$ matrix to assess sensitivity
+to this: raw $\Delta Z$ using all 13 factors; raw $\Delta Z$ with Factor~1 excluded;
+L2-normalised $\Delta Z$ (all factors); and L2-normalised $\Delta Z$ with Factor~1
+excluded.
+L2 normalisation places all patients on a unit hypersphere, making clustering
+respond to transformation direction rather than magnitude.
+The primary representation for clustering was L2-normalised $\Delta Z$ on all 13 factors.
+
+We clustered the 102 patients using $k$-means (\texttt{sklearn.cluster.KMeans},
+\texttt{n\_init=100}), sweeping $k \in \{2, 3, 4, 5, 6\}$ and recording the mean
+silhouette score at each $k$.
+Gaussian Mixture Model (GMM) AIC and BIC were computed at each $k$ as additional
+descriptive metrics.
+We selected $k = 3$ based on the silhouette profile, cluster balance (37, 25, and
+40 patients), and partition robustness across representations.
+Robustness was quantified using the adjusted Rand index (ARI), which measures
+agreement between two independent cluster assignments on a scale from 0 (chance)
+to 1 (identical).
+Re-fitting the same algorithm on the three alternative representations and comparing
+with the primary partition yielded ARI $= 0.82$ against L2-normalised $\Delta Z$
+without Factor~1, and ARI $= 0.80$ against raw $\Delta Z$, indicating that the
+three-subtype structure is stable across representational choices.
+Silhouette scores in the range $0.18$--$0.19$ are lower than those typical of
+well-separated synthetic clusters; however, values in this range are biologically
+plausible for continuous molecular phenotypes and the decision to proceed with
+$k = 3$ was supported by the consistency of the partition across representations.
+
+\subsection{Biological and clinical interpretation}
+
+\paragraph{Factor interpretation.}
+MOFA factor loadings measure the contribution of each gene to a given factor: genes
+with large positive loadings are the primary drivers of high factor scores, and genes
+with large negative loadings drive low scores.
+To characterise the biological programmes encoded in each factor, we ranked all 5,000
+transcripts by their RNA loading weight and applied preranked gene set enrichment
+analysis (GSEA).
+Preranked GSEA walks down a sorted gene list and tests whether the members of each
+predefined gene set are concentrated near the top or bottom relative to a permutation
+null; the normalised enrichment score (NES) indicates the direction and strength of
+enrichment.
+A positive NES indicates enrichment among genes with large positive loadings; a
+negative NES indicates enrichment at the negative-loading pole.
+We used the MSigDB Hallmark 2020 and KEGG 2021 Human libraries (1,000 permutations,
+gene set size 15--500) and filtered results at FDR $< 0.10$ (Benjamini-Hochberg).
+
+\paragraph{Cluster interpretation.}
+To test whether the transformation subtypes differ in their transcriptional
+reprogramming, we computed per-patient differential expression as
+$\Delta \text{Expr}_i = \text{RNA}_{\text{tumour},i} - \text{RNA}_{\text{normal},i}$
+across the full 59,286-gene matrix from ingestion rather than the MAD-filtered
+MOFA input.
+This avoids biasing the test towards features that were pre-selected for latent
+factor construction; the cluster interpretation is thereby an independent assessment.
+For each subtype we performed one-vs-rest Mann-Whitney $U$ tests on
+$\Delta \text{Expr}$ across all genes and applied Benjamini-Hochberg correction.
+The per-gene median difference between the focal cluster and all remaining patients
+was used as the ranking statistic for a second round of preranked GSEA with the
+same libraries and FDR threshold.
+
+\paragraph{Clinical associations.}
+Overall survival was estimated using the Kaplan-Meier method for each transformation
+subtype.
+An omnibus log-rank test was applied to assess whether survival distributions differed
+across the three subtypes simultaneously.
+Pairwise log-rank comparisons were conducted only when the omnibus test yielded
+$p < 0.05$, with Benjamini-Hochberg correction applied.
+Enrichment of driver mutations (KRAS, EGFR, TP53, ALK) within each subtype was
+evaluated by two-sided Fisher's exact test, corrected across all mutation-subtype
+pairs by Benjamini-Hochberg.
+Given $n = 102$ patients, all survival analyses should be interpreted as
+hypothesis-generating; the small cohort size makes it this analysis severely underpowered.
+Full configuration parameters are available in the project repository at
+\texttt{config/config.yml}.
