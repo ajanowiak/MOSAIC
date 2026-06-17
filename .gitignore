@@ -43,3 +43,29 @@ vignettes/*.pdf
 
 # Directory for temporary files (preferably a symbolic link to some scratch location)
 tmp/
+
+# Directory for logs
+log/
+
+# Directory for notes
+notes/
+
+
+# Directory for figures
+figures/
+
+# Directory for data
+data/
+
+# Directory for report
+# report/
+
+# Directory for results
+results/
+
+# Directory for __pycache__
+src/py/utils/__pycache__/
+src/py/__pycache__/
+
+# Directory for report build files
+report/build/
