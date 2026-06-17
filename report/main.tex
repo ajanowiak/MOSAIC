@@ -1,0 +1,66 @@
+\documentclass[12pt,a4paper]{article}
+
+% encoding and fonts
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+
+% layout
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% mathematics
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% figures and tables
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+
+% hyperlinks and cross-references
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+% bibliography
+\usepackage[numbers,sort&compress]{natbib}
+
+% miscellaneous
+\usepackage{microtype}
+\usepackage{xcolor}
+
+% -----------------------------------------------------------------------
+% Document metadata
+% -----------------------------------------------------------------------
+\title{%
+    \textbf{MOSAIC: Multi-Omics Subtype Analysis In Cancer}\\[0.5em]
+    \large Latent Transformation Trajectories in Lung Adenocarcinoma
+}
+\author{Aleksander Janowiak}
+\date{June 2026}
+
+% -----------------------------------------------------------------------
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\tableofcontents
+\newpage
+
+% -----------------------------------------------------------------------
+\include{sections/introduction}
+\include{sections/methods}
+\include{sections/results}
+\include{sections/discussion}
+\include{sections/conclusions}
+
+% -----------------------------------------------------------------------
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

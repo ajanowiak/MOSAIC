@@ -1,0 +1,51 @@
+\section{Introduction}
+
+Lung adenocarcinoma (LUAD) is the most common subtype of non-small cell lung cancer and
+exhibits substantial molecular heterogeneity.
+Transcriptomic profiling of tumour tissue by the Cancer Genome Atlas (TCGA) identified three
+reproducible molecular subtypes: the terminal respiratory unit (TRU), characterised by
+differentiation markers and enrichment for \textit{EGFR} mutations; the proximal-inflammatory
+(PI) subtype, dominated by immune-related gene expression; and the proximal-proliferative (PP)
+subtype, marked by cell cycle and \textit{KRAS}-associated programmes \cite{tcga2014luad}.
+These subtypes describe the tumour \emph{state} --- the molecular profile of established
+disease.
+Matched tumour-normal cohorts, such as the Clinical Proteomic Tumour Analysis Consortium
+LUAD dataset \cite{gillette2020proteogenomic}, were designed to support a complementary
+analysis: by profiling adjacent normal lung tissue from the same patient, they make it
+possible to attribute molecular differences to the tumour itself rather than to inter-individual
+variation in normal tissue composition.
+In practice, matched designs are most often used for conventional paired differential expression,
+which identifies genes that shift on average across the cohort but discards patient-level
+information about how far and in which direction any individual tumour has moved.
+
+The central question of this project is whether patients with LUAD undergo qualitatively
+distinct molecular transformations during tumourigenesis, or whether transformation is
+essentially uniform across the cohort.
+We address this by operating in a multi-omics latent space rather than in the original
+high-dimensional feature space.
+Multi-Omics Factor Analysis (MOFA+) \cite{argelaguet2020mofa2} is fit jointly on all
+tumour and normal samples, yielding a set of latent factors that capture shared axes of
+variation across transcriptomic, proteomic, and phosphoproteomic data.
+Every sample receives a factor score vector~$Z$; for each patient~$i$ we define the
+\emph{latent transformation vector}
+\begin{equation}
+    \Delta Z_i \;=\; Z_{\text{tumour},i} \;-\; Z_{\text{normal},i},
+    \label{eq:deltaz}
+\end{equation}
+which encodes the direction and magnitude of that patient's tumourigenesis as a displacement
+in the shared latent space.
+Clustering patients by~$\Delta Z$ thus groups those who undergo qualitatively similar
+multi-omics reprogramming, regardless of their absolute tumour state.
+We refer to these groups as \emph{transformation subtypes} to distinguish them from
+the state-based subtypes identified by prior transcriptomic classification.
+
+This report describes the full MOSAIC pipeline.
+We first fit a MOFA+ model on all 204 samples to learn a compact, biologically grounded
+latent representation (\S\ref{sec:methods}).
+We then compute per-patient~$\Delta Z$ vectors and characterise their geometry --- magnitude,
+factor composition, and relationships to clinical covariates.
+We cluster the~$\Delta Z$ vectors to identify candidate transformation subtypes and assess
+their robustness across alternative representations.
+We interpret each subtype biologically using pathway analysis on both MOFA factor loadings
+and per-patient differential expression, and finally test preliminary clinical associations
+through survival and driver mutation analyses.
