@@ -31,7 +31,7 @@ rule compute_delta:
         summary_panel_all_factors="figures/delta/repr_comparison/summary_panel_all_factors.pdf",
         summary_panel_no_factor1="figures/delta/repr_comparison/summary_panel_no_factor1.pdf",
     conda:
-        "../../env/analysis.yml"
+        "../../../env/analysis.yml"
     log:
         "log/compute_delta.log"
     params:

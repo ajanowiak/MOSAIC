@@ -7,7 +7,7 @@ rule ingest:
     params:
         missing_threshold=config["preprocessing"]["missing_value_threshold"],
     conda:
-        "../../env/mosaic.yaml"
+        "../../../env/mosaic.yaml"
     log:
         "log/01_ingest.log"
     shell:

@@ -13,7 +13,7 @@ rule fit_mofa:
         variance_explained_heatmap="figures/mofa/variance_explained_heatmap.pdf",
         elbo_convergence="figures/mofa/elbo_convergence.pdf",
     conda:
-        "../../env/mofa.yml"
+        "../../../env/mofa.yml"
     log:
         "log/03_fit_mofa.log"
     params:

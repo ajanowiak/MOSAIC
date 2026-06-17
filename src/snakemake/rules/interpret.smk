@@ -13,10 +13,10 @@ rule interpret:
         fig_cluster_heat = "figures/interpretation/cluster_interpretation/gsea_cluster_heatmap.pdf",
         fig_volcano  = "figures/interpretation/cluster_interpretation/volcano_panel.pdf",
     conda:
-        "../../env/analysis.yml"
+        "../../../env/analysis.yml"
     log:
         "log/07_interpret.log"
     params:
         config = "config/config.yml"
     shell:
-        "python src/py/07_interpret.py --config {params.config} > {log} 2>&1"
+        "mkdir -p log && python src/py/07_interpret.py --config {params.config} > {log} 2>&1"

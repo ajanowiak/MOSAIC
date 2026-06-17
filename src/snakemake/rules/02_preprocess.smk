@@ -12,7 +12,7 @@ rule preprocess:
         mad_distributions="figures/preprocessing/mad_distributions.pdf",
         sample_correlation="figures/preprocessing/sample_correlation_matrix.pdf",
     conda:
-        "../../env/analysis.yml"
+        "../../../env/analysis.yml"
     log:
         "log/preprocess.log"
     params:

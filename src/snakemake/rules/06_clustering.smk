@@ -33,7 +33,7 @@ rule clustering:
         fig_centroids  = "figures/clustering/cluster_centroids.pdf",
         fig_dispersion = "figures/clustering/dispersion_summary.pdf",
     conda:
-        "../../env/analysis.yml"
+        "../../../env/analysis.yml"
     log:
         "log/06_clustering.log"
     params:

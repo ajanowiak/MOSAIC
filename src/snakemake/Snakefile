@@ -1,0 +1,34 @@
+# MOSAIC pipeline — top-level Snakemake entrypoint
+configfile: "config/config.yml"
+
+include: "rules/01_ingest.smk"
+include: "rules/02_preprocess.smk"
+include: "rules/03_fit_mofa.smk"
+include: "rules/04_factor_qc.smk"
+include: "rules/05_delta.smk"
+include: "rules/06_clustering.smk"
+include: "rules/06.1_clustering_plot.smk"
+include: "rules/interpret.smk"
+include: "rules/08_clinical.smk"
+
+rule all:
+    input:
+        # Stage 01 — ingestion
+        "results/ingestion/metadata.csv",
+        # Stage 02 — preprocessing
+        "figures/preprocessing/sample_correlation_matrix.pdf",
+        # Stage 03 — MOFA
+        "figures/mofa/elbo_convergence.pdf",
+        # Stage 04 — factor QC
+        "figures/factor_qc/factor_violin_by_tissue.pdf",
+        # Stage 05 — delta representation analysis
+        "figures/delta/repr_comparison/summary_panel_no_factor1.pdf",
+        # Stage 06 — clustering
+        "figures/clustering/dispersion_summary.pdf",
+        # Stage 06.1 — clustering visualisation
+        "figures/clustering/cluster_umap.pdf",
+        "figures/clustering/cluster_pca.pdf",
+        # Stage 07 — interpretation
+        "figures/interpretation/cluster_interpretation/volcano_panel.pdf",
+        # Stage 08 — clinical associations
+        "figures/clinical/magnitude_by_cluster.pdf",

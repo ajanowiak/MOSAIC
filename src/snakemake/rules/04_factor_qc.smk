@@ -18,7 +18,7 @@ rule factor_qc:
         trajectory_umap_no_factor1="figures/factor_qc/trajectory_arrows_umap_no_factor1.pdf",
         factor_violin="figures/factor_qc/factor_violin_by_tissue.pdf",
     conda:
-        "../../env/analysis.yml"
+        "../../../env/analysis.yml"
     log:
         "log/factor_qc.log"
     params:

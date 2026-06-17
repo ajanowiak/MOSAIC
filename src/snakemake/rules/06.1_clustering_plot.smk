@@ -13,7 +13,7 @@ rule clustering_plot:
         fig_umap = "figures/clustering/cluster_umap.pdf",
         fig_pca  = "figures/clustering/cluster_pca.pdf",
     conda:
-        "../../env/analysis.yml"
+        "../../../env/analysis.yml"
     log:
         "log/06.1_clustering_plot.log"
     params:

@@ -14,7 +14,7 @@ rule clinical:
         overview    = "figures/clinical/clinical_overview_heatmap.pdf",
         mag_fig     = "figures/clinical/magnitude_by_cluster.pdf",
     conda:
-        "../../env/analysis.yml"
+        "../../../env/analysis.yml"
     log:
         "log/08_clinical.log"
     params:
