@@ -1,0 +1,248 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{MOFA captures a shared multi-omics latent space}
+
+Of the 20 initialised factors, 13 were retained after ARD filtering
+($R^2_{\max} \geq 0.01$).
+Factor~1 is by far the dominant component, explaining 13.0\% of transcriptomic,
+33.6\% of proteomic, and 32.1\% of phosphoproteomic variance
+(Figure~\ref{fig:var_explained}).
+The remaining 12 factors each explain less than 8.1\% of variance in any single view,
+with most falling below 3\%, indicating that variance is heavily concentrated in Factor~1.
+
+Factor~1 perfectly separates tumour from normal tissue: a paired Wilcoxon test on
+$\Delta Z$ yielded $p = 1.8 \times 10^{-18}$ with rank-biserial $r = 1.0$, meaning
+all 102 patients shifted in the same direction along Factor~1 during tumourigenesis.
+No other factor reached statistical significance.
+The PCA trajectory plot in Figure~\ref{fig:traj_pca} makes this structure visible:
+PC1 is dominated by Factor~1, and the 102 per-patient arrows are predominantly
+parallel and oriented along this axis.
+The consistency of the Factor~1 trajectory confirms that MOFA has learned a
+biologically coherent shared space in which tumourigenesis appears as a
+reproducible displacement.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.55\textwidth]{figures/variance_explained_heatmap.pdf}
+    \caption{Fraction of variance explained by each retained MOFA+ factor per
+    omics view. Factor~1 explains substantially more variance than any other factor
+    across all three modalities.}
+    \label{fig:var_explained}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/trajectory_arrows_pca.pdf}
+    \caption{Per-patient tumourigenesis trajectories in the PCA of MOFA+ factor
+    scores (all 204 samples). Each arrow connects the normal (open circle) to the
+    tumour (filled circle) sample of one patient. The dominant direction along PC1
+    reflects the near-universal Factor~1 shift.}
+    \label{fig:traj_pca}
+\end{figure}
+
+\subsection{$\Delta Z$ vectors encode patient-level transformation heterogeneity}
+\label{sec:delta}
+
+The $\Delta Z$ matrix for 102 patients shows that Factor~1 drives a large, uniform
+component of tumourigenesis: the rank-biserial correlation of $r = 1.0$ implies that
+the tumour-minus-normal displacement is in the same direction for every patient along
+this axis.
+In contrast, the remaining 12 factors show substantial variation across patients
+(per-factor distributions are shown in Appendix Figure~\ref{fig:delta_distributions}),
+suggesting that inter-patient heterogeneity in transformation is concentrated in the
+dimensions beyond the dominant tumour-normal axis.
+
+Transformation magnitude (L2 norm of $\Delta Z$) varied across patients but showed
+no significant association with tumour stage
+(Kruskal-Wallis $H = 3.40$, $p = 0.183$; Appendix Figure~\ref{fig:mag_by_stage}).
+The absence of a stage-magnitude relationship indicates that transformation extent
+in latent space does not simply reflect disease progression as captured by clinical
+staging.
+
+\subsection{Clustering identifies three reproducible transformation subtypes}
+
+We swept $k \in \{2, 3, 4, 5, 6\}$ on L2-normalised $\Delta Z$.
+The silhouette score peaked at $k = 2$ (0.184) and remained nearly identical at
+$k = 3$ (0.182), after which it declined monotonically (Table~\ref{tab:model_sel}).
+GMM BIC increased continuously with $k$, while AIC continued to decrease, indicating
+that the penalty for additional components outweighs the likelihood gain and that the
+data do not support strongly separated Gaussian clusters (Figure~\ref{fig:model_sel}).
+We selected $k = 3$ over $k = 2$ based on the nearly indistinguishable silhouette
+scores, the more balanced partition (37, 25, and 40 patients versus 77 and 25 for
+$k = 2$), and the fact that $k = 3$ yields a biologically richer description of
+inter-patient heterogeneity (see \S\ref{sec:interpret}).
+
+\begin{table}[t]
+    \centering
+    \caption{Clustering quality metrics across $k$ on L2-normalised $\Delta Z$.
+    Silhouette scores are means over all patients; GMM AIC and BIC are computed
+    independently for each $k$ as descriptive metrics.}
+    \label{tab:model_sel}
+    \begin{tabular}{rrrr}
+        \toprule
+        $k$ & Silhouette & GMM AIC & GMM BIC \\
+        \midrule
+        2 & 0.184 & $-$1298.2 & $-$749.6 \\
+        3 & 0.182 & $-$1303.5 & $-$479.3 \\
+        4 & 0.169 & $-$1530.2 & $-$430.3 \\
+        5 & 0.165 & $-$1574.7 & $-$199.2 \\
+        6 & 0.157 & $-$1842.4 & $-$191.3 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+    \begin{subfigure}[t]{0.56\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/model_selection.pdf}
+        \caption{Silhouette score (left) and GMM AIC/BIC (right) versus $k$.
+        The silhouette plateau at $k = 2$--$3$ and the increasing BIC are consistent
+        with weak cluster separation on a continuous manifold.}
+        \label{fig:model_sel}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.40\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/cross_repr_ari.pdf}
+        \caption{Adjusted Rand index between the primary partition
+        ($k = 3$, L2-normalised $\Delta Z$) and three alternative representations.
+        All ARI values exceed 0.79.}
+        \label{fig:ari}
+    \end{subfigure}
+    \caption{Clustering model selection (a) and cross-representation robustness (b).}
+    \label{fig:clustering_diag}
+\end{figure}
+
+The three-subtype partition was robust across representational choices: ARI against
+L2-normalised $\Delta Z$ without Factor~1 was 0.82, against raw $\Delta Z$ was 0.80,
+and against 2D PCA of the primary representation was 0.80
+(Figure~\ref{fig:ari}).
+Pairwise centroid distances in L2-normalised space ranged from 0.56 (subtypes 0 and 2)
+to 0.83 (subtypes 0 and 1), exceeding the mean within-cluster radius of
+0.48--0.54 for all pairs.
+
+The UMAP projection in Figure~\ref{fig:cluster_umap} and the $\Delta Z$ heatmap in
+Figure~\ref{fig:delta_heatmap} illustrate the structure of the three subtypes.
+In the UMAP, the subtypes occupy partially overlapping regions consistent with a
+continuous manifold rather than discrete blobs, in agreement with the silhouette
+scores.
+The heatmap confirms that all subtypes share a strongly negative Factor~1 component
+(universal tumourigenesis shift) but differ in their profiles across Factors 2--13,
+motivating the biological characterisation below.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.55\textwidth]{figures/cluster_umap.pdf}
+    \caption{UMAP of L2-normalised $\Delta Z$ coloured by transformation subtype.
+    Clustering was performed in the full 13-dimensional space; the UMAP is for
+    visualisation only. Partial overlap between subtypes is consistent with the
+    low silhouette scores.}
+    \label{fig:cluster_umap}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/delta_heatmap.pdf}
+    \caption{Heatmap of raw $\Delta Z$ values (patients $\times$ factors) sorted by
+    transformation subtype. All subtypes share a uniformly negative Factor~1
+    component; inter-subtype differences are concentrated in Factors 2--13.}
+    \label{fig:delta_heatmap}
+\end{figure}
+
+\subsection{Transformation subtypes reflect distinct molecular programmes}
+\label{sec:interpret}
+
+\paragraph{Factor interpretation.}
+Preranked GSEA on RNA factor loadings yielded significant results (FDR $< 0.10$) for
+8 of the 13 retained factors; Factors~1, 2, 4, 6, and 9 returned no significant
+enrichment at this threshold (Figure~\ref{fig:gsea_factor}).
+The most consistently enriched categories were cytokine-cytokine receptor interaction
+(Factors 3, 5, 13), xenobiotic metabolism and chemical carcinogenesis (Factors 10
+and 11), and downstream KRAS signalling suppression (Factors 7 and 12).
+Factor~1, despite its strong tissue-separation signal, showed no significant pathway
+enrichment, suggesting that it captures a broad transcriptional state shift that is
+not well-represented by the curated gene sets used here.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/gsea_factor_heatmap.pdf}
+    \caption{Preranked GSEA results for retained MOFA+ factors using RNA loading
+    weights. Cells show NES; only pathways significant in at least one factor
+    (FDR $< 0.10$) are displayed. Positive NES indicates enrichment at the positive
+    loading pole; negative NES at the negative pole.}
+    \label{fig:gsea_factor}
+\end{figure}
+
+\paragraph{Cluster interpretation.}
+One-vs-rest $\Delta$Expression GSEA revealed that all three subtypes are
+transcriptionally distinct (Figure~\ref{fig:gsea_cluster}).
+Subtype~1 ($n = 25$) showed the strongest activation of proliferative programmes:
+E2F targets (NES $= 1.80$, FDR $< 0.001$) and G2-M checkpoint
+(NES $= 1.75$, FDR $= 0.002$) were among the most significantly enriched pathways,
+indicating that these patients undergo substantially greater tumour-vs-normal
+upregulation of cell cycle machinery than patients in the other two subtypes.
+Subtype~0 ($n = 37$) displayed the inverse pattern: the same E2F, G2-M, and MYC
+target gene sets were negatively enriched (NES $\leq -1.61$, FDR $\leq 0.04$),
+reflecting relatively suppressed proliferative transformation compared to subtypes~1
+and 2.
+Subtype~2 ($n = 40$) showed the strongest interferon response: interferon-$\alpha$
+(NES $= 1.79$, FDR $= 0.008$) and interferon-$\gamma$ (NES $= 1.77$, FDR $= 0.007$)
+were the top enriched pathways.
+E2F targets were also enriched in subtype~2 (NES $= 1.68$, FDR $= 0.035$), in
+contrast to their depletion in subtype~0.
+The three subtypes therefore differ systematically in their transcriptional
+reprogramming: subtype~1 is proliferation-dominant, subtype~0 shows relatively
+suppressed cell-cycle activation, and subtype~2 combines immune activation with a
+proliferative component.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/gsea_cluster_heatmap.pdf}
+    \caption{One-vs-rest $\Delta$Expression GSEA results for the three transformation
+    subtypes. Cells show NES; only pathways significant in at least one subtype
+    (FDR $< 0.10$) are displayed. Negative NES indicates that the pathway is
+    relatively suppressed in the focal subtype compared with the other patients.}
+    \label{fig:gsea_cluster}
+\end{figure}
+
+\subsection{Preliminary clinical associations}
+
+No significant difference in overall survival was observed across the three subtypes
+(omnibus log-rank $p = 0.632$; Figure~\ref{fig:km}). Hence, pairwise comparisons were not
+performed.
+With $n = 102$ patients, the study is insufficiently powered to detect modest
+survival differences.
+
+Driver mutation enrichment analysis revealed a significant association between
+subtype and \textit{EGFR} mutation status (Figure~\ref{fig:mut}).
+\textit{EGFR} mutations were enriched in subtype~0 (odds ratio 3.18,
+BH-adjusted $p = 0.043$) and depleted in subtype~1 (odds ratio 0.22,
+BH-adjusted $p = 0.043$).
+ALK fusions were strongly depleted in subtype~0 (odds ratio 0.12,
+BH-adjusted $p = 0.016$), consistent with the mutual exclusivity of
+\textit{EGFR} mutations and ALK rearrangements as driver events.
+\textit{KRAS} and \textit{TP53} mutations showed no significant cluster association
+after Benjamini-Hochberg correction.
+The co-occurrence of EGFR enrichment, suppressed proliferative transformation, and
+relatively lower cell-cycle upregulation in subtype~0 is consistent with the
+biology of EGFR-driven LUAD, which tends towards a more differentiated, TRU-like
+transcriptional state.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/km_curves.pdf}
+    \caption{Kaplan-Meier overall survival curves for the three transformation
+    subtypes. Shading shows 95\% confidence intervals; tick marks indicate
+    censored observations. Omnibus log-rank $p = 0.632$.}
+    \label{fig:km}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.72\textwidth]{figures/mutation_enrichment_heatmap.pdf}
+    \caption{Driver mutation enrichment across transformation subtypes. Cell colour
+    encodes $\log_2$ odds ratio; asterisks indicate BH-adjusted $p < 0.05$ ($*$)
+    or $p < 0.01$ ($**$).}
+    \label{fig:mut}
+\end{figure}
