@@ -1,0 +1,260 @@
+% Reset figure and table counters so appendix items are numbered A1, A2, ...
+\renewcommand{\thefigure}{A\arabic{figure}}
+\renewcommand{\thetable}{A\arabic{table}}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+
+% -----------------------------------------------------------------------
+\section{Supplementary Figures}
+\label{sec:app_figures}
+
+\subsection{Preprocessing}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/mad_distributions.pdf}
+    \caption{MAD distributions for each omics view after ingestion. The dashed red
+    line marks the MAD of the last retained feature; all features to the right were
+    selected. Retained counts: 5,000 transcripts, 5,000 proteins, 6,000
+    phosphosites.}
+    \label{fig:app_mad}
+\end{figure}
+
+\clearpage
+\subsection{MOFA model fitting}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/elbo_convergence.pdf}
+    \caption{Final ELBO per random seed. The model with the highest ELBO (seed 2,
+    $-3.72 \times 10^6$) was selected for all downstream analyses.}
+    \label{fig:app_elbo}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/factor_violin_by_tissue.pdf}
+    \caption{Distribution of MOFA+ factor scores split by tissue type (tumour vs.\
+    normal) for all 13 retained factors. Factor~1 shows complete separation; no
+    other factor reaches significance after Bonferroni correction.}
+    \label{fig:app_violin}
+\end{figure}
+
+\clearpage
+\subsection{Tumourigenesis trajectories}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/trajectory_arrows_umap.pdf}
+    \caption{Per-patient tumourigenesis trajectories in the UMAP of MOFA+ factor
+    scores (all 13 factors, all 204 samples). Each arrow connects the normal to the
+    tumour sample of one patient.}
+    \label{fig:app_traj_umap}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/trajectory_arrows_pca_no_factor1.pdf}
+    \caption{Trajectory arrows in PCA of factor scores with Factor~1 excluded.
+    Projecting out the dominant tumour-normal axis reveals substructure in the
+    remaining factors that is obscured in Figure~\ref{fig:traj_pca}.}
+    \label{fig:app_traj_pca_nof1}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/trajectory_arrows_umap_no_factor1.pdf}
+    \caption{Trajectory arrows in UMAP of factor scores with Factor~1 excluded.
+    Arrow directions are more heterogeneous than in the full-factor UMAP
+    (Figure~\ref{fig:app_traj_umap}), confirming that Factor~1 drives the dominant
+    shared trajectory.}
+    \label{fig:app_traj_umap_nof1}
+\end{figure}
+
+\clearpage
+\subsection{$\Delta Z$ heterogeneity}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/delta_distributions.pdf}
+    \caption{Per-factor $\Delta Z$ distributions across all 102 patients. Factor~1
+    is strongly negative in all patients (universal tumourigenesis shift); the
+    remaining factors show patient-level variation of varying magnitude.}
+    \label{fig:delta_distributions}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/magnitude_by_stage.pdf}
+    \caption{L2 norm of $\Delta Z$ (transformation magnitude) stratified by tumour
+    stage. No significant difference was observed (Kruskal-Wallis $H = 3.40$,
+    $p = 0.183$).}
+    \label{fig:mag_by_stage}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/repr_comparison_panel.pdf}
+    \caption{2$\times$2 comparison of $\Delta Z$ representations: raw vs.\
+    L2-normalised $\times$ PCA vs.\ UMAP, using all 13 factors. Points are
+    coloured by transformation magnitude (viridis). The panel was used to select
+    L2-normalised $\Delta Z$ as the primary clustering representation.}
+    \label{fig:app_repr_panel}
+\end{figure}
+
+\clearpage
+\subsection{Clustering}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/cluster_pca.pdf}
+    \caption{PCA of L2-normalised $\Delta Z$ coloured by transformation subtype.
+    The three subtypes overlap substantially in 2D, consistent with the UMAP in
+    Figure~\ref{fig:cluster_umap} and the low silhouette scores.}
+    \label{fig:app_cluster_pca}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/cluster_centroids.pdf}
+    \caption{Factor-level centroid profiles for each transformation subtype in raw
+    $\Delta Z$ space. All subtypes have a strongly negative Factor~1 component;
+    differences in Factors 2--13 define the subtype-specific patterns.}
+    \label{fig:app_centroids}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/dispersion_summary.pdf}
+    \caption{Within-cluster dispersion (left) and pairwise centroid distances
+    (right) in L2-normalised $\Delta Z$ space. Centroid distances (0.56--0.83)
+    exceed mean within-cluster radii (0.48--0.54) for all pairs, indicating that
+    the subtypes are more separated than they are internally dispersed.}
+    \label{fig:app_dispersion}
+\end{figure}
+
+\clearpage
+\subsection{Biological interpretation}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/volcano_panel.pdf}
+    \caption{Volcano plots of one-vs-rest $\Delta$Expression for each transformation
+    subtype. Each point is a gene; $x$-axis shows median difference in
+    $\Delta\text{Expr}$ between the focal subtype and all other patients;
+    $y$-axis shows $-\log_{10}(\text{FDR})$. Top differentially expressed genes
+    are labelled.}
+    \label{fig:app_volcano}
+\end{figure}
+
+\clearpage
+\subsection{Clinical associations}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/magnitude_by_cluster.pdf}
+    \caption{Transformation magnitude (L2 norm of $\Delta Z$) per subtype.
+    No significant difference was observed across subtypes
+    (Kruskal-Wallis $H = 3.72$, $p = 0.156$).}
+    \label{fig:app_mag_cluster}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/clinical_overview_heatmap.pdf}
+    \caption{Descriptive clinical characteristics per transformation subtype.
+    Three panels show demographics (sex, age, smoking), tumour stage distribution,
+    and driver mutation prevalence. Values are percentages; median age is reported
+    separately in Table~\ref{tab:app_clinical}.}
+    \label{fig:app_clinical_overview}
+\end{figure}
+
+% -----------------------------------------------------------------------
+\clearpage
+\section{Supplementary Tables}
+\label{sec:app_tables}
+
+\subsection{Factor tissue separation statistics}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Paired Wilcoxon test for tumour-vs-normal separation per MOFA+ factor,
+    applied to $\Delta Z$ values across all 102 patients. $p$-values are corrected
+    by Benjamini-Hochberg (BH). Only Factor~1 is significant after correction.}
+    \label{tab:app_tissue_stats}
+    \begin{tabular}{lrrrr}
+        \toprule
+        Factor & $W$ & Raw $p$ & Rank-biserial $r$ & BH-adjusted $p$ \\
+        \midrule
+        Factor1  &     0 & $1.8 \times 10^{-18}$ & 1.000 & $2.4 \times 10^{-17}$ \\
+        Factor2  &  2174 & 0.131                 & 0.172 & 0.394 \\
+        Factor3  &  2284 & 0.253                 & 0.130 & 0.470 \\
+        Factor4  &  2190 & 0.145                 & 0.166 & 0.394 \\
+        Factor5  &  2453 & 0.562                 & 0.066 & 0.812 \\
+        Factor6  &  2160 & 0.119                 & 0.178 & 0.394 \\
+        Factor7  &  2480 & 0.625                 & 0.056 & 0.812 \\
+        Factor8  &  2600 & 0.930                 & 0.010 & 0.930 \\
+        Factor9  &  2197 & 0.152                 & 0.164 & 0.394 \\
+        Factor10 &  2370 & 0.392                 & 0.098 & 0.637 \\
+        Factor11 &  2576 & 0.866                 & 0.019 & 0.930 \\
+        Factor12 &  2241 & 0.198                 & 0.147 & 0.429 \\
+        Factor13 &  2521 & 0.725                 & 0.040 & 0.856 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Clinical characteristics per subtype}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Clinical characteristics per transformation subtype. Values are
+    percentages except median age. Smoking: ever-smoker (current or reformed).
+    Cluster 0 has 34 patients with available survival data (3 missing).}
+    \label{tab:app_clinical}
+    \begin{tabular}{lrrr}
+        \toprule
+        & Subtype 0 ($n = 37$) & Subtype 1 ($n = 25$) & Subtype 2 ($n = 40$) \\
+        \midrule
+        Median age (years)      & 66   & 58   & 65.5 \\
+        Female (\%)             & 54.1 & 12.0 & 35.0 \\
+        Ever-smoker (\%)        & 54.1 & 68.0 & 55.0 \\
+        \midrule
+        Stage I (\%)            & 56.8 & 52.0 & 52.5 \\
+        Stage II (\%)           & 32.4 & 20.0 & 30.0 \\
+        Stage III (\%)          & 10.8 & 28.0 & 17.5 \\
+        \midrule
+        \textit{KRAS} mut.\ (\%)   & 16.2 & 40.0 & 37.5 \\
+        \textit{EGFR} mut.\ (\%)   & 56.8 & 16.0 & 37.5 \\
+        \textit{TP53} mut.\ (\%)   & 43.2 & 64.0 & 70.0 \\
+        ALK fusion (\%)            &  5.4 & 36.0 & 30.0 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Kaplan-Meier at-risk table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Kaplan-Meier at-risk table. At-risk counts at each time point;
+    cumulative censored and event counts are shown for each subtype. Subtype 0
+    has 34 patients with survival data available.}
+    \label{tab:app_km_atrisk}
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{r rrr rrr rrr}
+        \toprule
+        & \multicolumn{3}{c}{Subtype 0} & \multicolumn{3}{c}{Subtype 1} & \multicolumn{3}{c}{Subtype 2} \\
+        \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+        Days & At risk & Censored & Events & At risk & Censored & Events & At risk & Censored & Events \\
+        \midrule
+           0 & 34 &  0 &  0 & 25 &  0 &  0 & 40 &  0 &  0 \\
+         250 & 30 &  3 &  1 & 23 &  0 &  2 & 36 &  3 &  1 \\
+         500 & 23 &  9 &  2 &  9 & 12 &  4 & 17 & 19 &  4 \\
+         750 & 21 & 10 &  3 &  6 & 15 &  4 & 13 & 21 &  6 \\
+        1000 & 17 & 11 &  6 &  3 & 17 &  5 & 11 & 22 &  7 \\
+        1250 & 10 & 18 &  6 &  2 & 18 &  5 &  7 & 25 &  8 \\
+        1500 &  8 & 20 &  6 &  1 & 19 &  5 &  6 & 26 &  8 \\
+        1750 &  4 & 23 &  7 &  1 & 19 &  5 &  4 & 28 &  8 \\
+        2000 &  0 & 27 &  7 &  0 & 20 &  5 &  0 & 32 &  8 \\
+        \bottomrule
+    \end{tabular}
+\end{table}

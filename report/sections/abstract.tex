@@ -1,0 +1,26 @@
+\begin{abstract}
+Lung adenocarcinoma (LUAD) exhibits substantial inter-patient molecular heterogeneity
+that transcriptomic subtyping of tumour tissue only partially captures.
+Here we ask whether this heterogeneity extends to the tumourigenesis \emph{process}
+itself: do patients undergo qualitatively distinct molecular transformations?
+We apply Multi-Omics Factor Analysis (MOFA+) to 102 matched tumour-normal pairs from the
+Clinical Proteomic Tumour Analysis Consortium LUAD cohort, learning a 13-factor latent
+space from transcriptomic, proteomic, and phosphoproteomic data.
+For each patient we compute a latent transformation vector
+$\Delta Z = Z_{\text{tumour}} - Z_{\text{normal}}$,
+encoding the direction and magnitude of molecular change in the shared latent space.
+Clustering these vectors by k-means identified three transformation subtypes that are
+reproducible across alternative representations (ARI\,$\geq$\,0.80).
+One-vs-rest differential expression followed by preranked GSEA revealed systematic
+differences in transcriptional reprogramming: subtype~0 shows relatively suppressed
+proliferative reprogramming and is significantly enriched for \textit{EGFR} mutations;
+subtype~1 is dominated by E2F and G2-M cell-cycle activation; and subtype~2 combines
+interferon signalling with a proliferative component.
+These signatures are broadly consistent with the TRU, PP, and PI state-based LUAD
+subtypes respectively, though the correspondence is suggestive rather than formally
+established.
+No significant overall survival difference was detected across subtypes ($n = 102$).
+The analysis provides a proof-of-concept that latent transformation vectors derived
+from a matched multi-omics cohort can reveal biologically coherent modes of
+tumourigenesis.
+\end{abstract}

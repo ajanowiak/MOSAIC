@@ -1,0 +1,32 @@
+\section{Conclusions}
+\label{sec:conclusions}
+
+The MOSAIC pipeline demonstrates that per-patient $\Delta Z$ vectors derived from a
+matched tumour-normal multi-omics cohort can support biologically informative patient
+stratification.
+Three reproducible transformation subtypes were identified from the CPTAC-LUAD dataset,
+each characterised by a distinct transcriptional reprogramming signature.
+Subtype~0 shows relatively suppressed cell-cycle activation and is significantly
+enriched for \textit{EGFR} mutations.
+Subtype~1 is proliferation-dominant, with strong E2F and G2-M upregulation.
+Subtype~2 is characterised by interferon-driven immune activation combined with a
+proliferative component.
+The \textit{EGFR} enrichment in subtype~0 gains additional credibility from the
+simultaneous depletion of ALK fusions in the same subtype: because \textit{EGFR}
+mutations and ALK rearrangements are mutually exclusive driver events, observing
+both associations together strengthens confidence in the subtype structure rather than
+attributing either result to chance alone.
+
+The geometric separation between subtypes is modest (mean silhouette $\approx 0.18$),
+suggesting a partially continuous biological manifold rather than fully discrete
+clusters.
+No significant overall survival difference was detected, which reflects the limited
+statistical power of the study ($n = 102$) rather than necessarily indicating clinical
+irrelevance.
+Replication in an independent LUAD cohort with matched normal profiling would be the
+most informative next step.
+
+\bigskip
+\noindent\textbf{Code availability.}
+The full analysis pipeline is publicly available at
+\url{https://github.com/ajanowiak/MOSAIC}.
