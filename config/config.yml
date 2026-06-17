@@ -25,29 +25,33 @@ mofa:
     phospho: gaussian
 
 clustering:
-  k_range: [2, 3, 4, 5, 6]
-  n_init: 100
+  k_range: [2, 3, 4, 5, 6]   # values tested in Stage 06 diagnostics (silhouette, GMM AIC/BIC)
+  n_init: 100                  # K-means restarts; GMM uses n_init=10 internally
   random_state: 42
 
-  # Controls how clustering parameters are chosen.
-  # "manual"    — use the parameters specified under clustering.manual below.
-  #               This is the default for reproducibility. Running snakemake
-  #               with this setting reproduces the exact results in the report.
-  # "automatic" — select k by the strategy specified under clustering.automatic.
-  #               Use this when exploring a new feature set.
+  # How the final clustering model is chosen (see README, "Clustering workflow"):
+  #   manual    — use clustering.manual below (default; reproduces the course report)
+  #   automatic — pick k by highest silhouette on clustering.automatic.representation
   clustering_parameter_selection: manual
 
   manual:
-    k: 3                      # analyst-chosen number of clusters
-    method: kmeans            # "kmeans" or "gmm"
-    representation: norm_all  # which delta_z variant to cluster on
+    k: 3                       # final number of clusters (report default: 3)
+    method: kmeans             # "kmeans" or "gmm"
+  # ΔZ representation for clustering (Stage 06 fits the model in this space):
+  #   raw_all    — raw ΔZ, all MOFA factors
+  #   raw_nof1   — raw ΔZ, Factor1 (tumour–normal axis) excluded
+  #   norm_all   — L2-normalised ΔZ, all factors (report default)
+  #   norm_nof1  — L2-normalised ΔZ, Factor1 excluded
+    representation: norm_all
 
   automatic:
-    strategy: silhouette      # only "silhouette" is currently supported
-    method: kmeans            # "kmeans" or "gmm"
-    representation: norm_all  # which delta_z variant to cluster on: "raw_all", "raw_nof1", "norm_all", "norm_nof1"
+    strategy: silhouette       # only "silhouette" is currently supported
+    method: kmeans
+    representation: norm_all
 
-  visualization_representation: norm_all  # "raw_all", "raw_nof1", "norm_all", or "norm_nof1"
+  # Stage 06.1 only: which Stage 05 PCA/UMAP embedding to colour by cluster assignment.
+  # Does not affect cluster labels — change clustering.manual.representation for that.
+  visualization_representation: norm_all
 
 interpretation:
   top_n_weights: 25
