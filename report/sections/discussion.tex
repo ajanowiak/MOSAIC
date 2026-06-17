@@ -1,0 +1,75 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Transformation subtypes in the context of established LUAD biology.}
+The transcriptional signatures of the three subtypes are broadly consistent with the
+state-based LUAD classification from TCGA \cite{tcga2014luad}.
+Subtype~0, which is enriched for \textit{EGFR} mutations and shows suppressed
+cell-cycle activation, resembles the Terminal Respiratory Unit (TRU) subtype,
+characterised by a differentiated transcriptional state and \textit{EGFR}-driven
+oncogenesis.
+Subtype~1, with its dominant E2F and G2-M programmes, parallels the Proximal
+Proliferative (PP) subtype.
+Subtype~2, defined by interferon signalling activation, is broadly consistent with the
+Proximal Inflammatory (PI) subtype, although the co-occurrence of E2F upregulation in
+subtype~2 does not map cleanly onto classical PI biology.
+Importantly, state-based and trajectory-based subtypes are conceptually distinct: TRU,
+PP, and PI describe what a tumour looks like, whereas the MOSAIC subtypes describe
+how the patient got there.
+The parallels are therefore informative rather than expected, and their correspondence
+warrants formal testing in a larger dataset.
+
+The mutation enrichment result provides an independent line of evidence for the
+biological coherence of the subtype structure.
+Because \textit{EGFR} mutations and ALK rearrangements are mutually exclusive oncogenic
+events in LUAD, the observation that both are differentially distributed within the same
+subtype (enriched and depleted, respectively, in subtype~0) implies that the clustering
+captures biologically meaningful patient groupings rather than statistical artefacts.
+
+\paragraph{The L2 normalisation choice and cluster geometry.}
+Clustering was performed on L2-normalised $\Delta Z$, which focuses on transformation
+\emph{direction} rather than magnitude.
+The practical consequence is that two patients with very different transformation
+extents but qualitatively similar factor profiles are assigned to the same subtype,
+while magnitude is treated as an independent dimension.
+This choice is supported by the absence of a significant association between
+transformation magnitude and tumour stage, which argues against magnitude being a
+simple proxy for disease state.
+The resulting silhouette scores ($\approx 0.18$) are modest, reflecting a partially
+continuous manifold rather than discrete clusters; this is expected for a cohort of
+100 patients stratified by a 13-dimensional biological signal.
+
+\paragraph{Limitations.}
+The most consequential limitation is sample size.
+With $n = 102$ patients, many of whom were censored before the study endpoint, the
+study is underpowered for survival analysis and the null log-rank result is
+uninformative rather than negative evidence.
+Biological interpretation relies exclusively on transcriptomic data at two stages:
+GSEA on MOFA factor loadings uses RNA weights only, and cluster differential expression
+uses tumour-minus-normal RNA rather than the multi-omics signal used in the MOFA fit.
+The proteomic and phosphoproteomic modalities therefore contribute to the latent space
+but are currently absent from the interpretation layer, leaving a portion of the
+multi-omics information unexploited.
+Finally, all results are derived from a single cohort; in the absence of external
+validation, the reported subtypes should be treated as hypotheses rather than
+established molecular entities.
+
+\paragraph{Future directions.}
+Multi-cancer validation using other CPTAC cohorts (e.g.\ breast or colorectal) would
+test whether latent trajectory structure is a general property of matched multi-omics
+tumourigenesis or specific to LUAD.
+Kinase activity inference from phosphoproteomics factor loadings (e.g.\ using
+kinase-substrate databases such as PhosphoSitePlus) would bring the third omics
+modality into the interpretation layer and link transformation subtypes to specific
+regulatory programmes.
+Fitting a continuous manifold model on $\Delta Z$ vectors, such as diffusion
+pseudotime, would complement the discrete clustering by revealing whether the three
+subtypes represent distinct attractors or points along a shared trajectory.
+The stochastic nature of MOFA fitting also deserves attention: comparing factor
+structures across models fitted with different random seeds would clarify which
+factors are stable properties of the data and which are more sensitive to
+initialisation.
+Finally, the current analysis uses MAD-based preselection on three omics views.
+Expanding the feature selection strategy or incorporating additional views (e.g.\
+copy-number alterations or miRNA) may better separate the transformation modes and
+reduce the current dependence on a single, view-agnostic ranking criterion.
